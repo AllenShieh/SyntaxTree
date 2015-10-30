@@ -23,11 +23,13 @@ char temp;
 %union{
     int iValue;
     char* sIndex;
+    char* oPerator;
     nodeType *nPtr;
 };
 %token <iValue> INT
-%token <sIndex> ID
-%token SEMI COMMA DOT ASSIGNOP BINARYOP UNARYOP TYPE LP RP LB RB LC RC STRUCT RETURN IF ELSE BREAK CONT FOR
+%token <sIndex> ID 
+%token <oPerator> BINARYOP
+%token SEMI COMMA DOT ASSIGNOP UNARYOP TYPE LP RP LB RB LC RC STRUCT RETURN IF ELSE BREAK CONT FOR
 %start PROGRAM
 
 %type <nPtr> STMT EXP STMTS ESTMT STMTBLOCK ARGS ARRS EXTDEF EXTDEFS EXTVARS DEFS DEF DECS DEC VAR SPEC STSPEC OPTTAG INIT FUNC PARA PARAS
@@ -48,15 +50,15 @@ SPEC        :   TYPE { $$ = opr(TYPE, 0); }
             |   STSPEC { $$ = opr('V', 1, $1); }
             ;
 STSPEC      :   STRUCT OPTTAG LC DEFS RC { $$ = opr(STRUCT, 2, $2, $4); }
-            |   STRUCT ID { $2 = id($2); $$ = opr(STRUCT, 1, $2); }
+            |   STRUCT VAR { $$ = opr(STRUCT, 1, $2); }
             ;
 OPTTAG      :   ID { $$ = id($1); }
             |   /* */ { $$ = opr('e', 0); }
             ;
 VAR         :   ID { $$ = id($1); }
-            |   VAR LB INT RB { $3 = con($3); $$ = opr('V', 2, $1, $3); }
+            |   VAR LB EXP RB { $$ = opr('V', 2, $1, $3); }
             ;
-FUNC        :   ID LP PARAS RP { $1 = id($1); $$ = opr('I', 2, $1, $3); }
+FUNC        :   VAR LP PARAS RP { $$ = opr('I', 2, $1, $3); }
             ;
 PARAS       :   PARA COMMA PARAS { $$ = opr('P', 2, $1, $3); }
             |   PARA { $$ = opr('P', 1, $1); }
@@ -100,13 +102,13 @@ ARRS        :   LB EXP RB ARRS { $$ = opr('R', 2, $2, $4); }
 ARGS        :   EXP COMMA ARGS { $$ = opr('A', 2, $1, $3); }
             |   EXP { $$ = opr('E', 1, $1); }
             ;
-EXP         :   EXP BINARYOP EXP { $$ = opr(BINARYOP, 2, $1, $3); }
+EXP         :   EXP BINARYOP EXP { temp = *$2; $$ = opr(temp, 2, $1, $3); }
             |   UNARYOP EXP { $$ = opr(UNARYOP, 1, $2); }
             |   LP EXP RP { $$ = opr('E', 1, $2); }
-            |   ID { $$ = id($1); }
+            /*|   ID { $$ = id($1); }*/
             /*|   ID LP ARGS RP { $1 = id($1); $$ = opr('A', 2, $1, $3); }*/
-            /*|   ID ARRS { $1 = id($1); $$ = opr('R', 2, $1, $2); }*/
-            |   EXP DOT ID { $3 = id($3); $$ = opr('E', 2, $1, $3); }
+            |   VAR ARRS { $$ = opr('R', 2, $1, $2); }
+            |   EXP DOT VAR { $$ = opr('E', 2, $1, $3); }
             |   INT { $$ = con($1); }
             |   /* */ { $$ = opr('e', 0); }
             ;
@@ -134,7 +136,7 @@ nodeType *id(char* i){
 
     nodeSize = SIZEOF_NODETYPE + sizeof(idNodeType);
     if((p=malloc(nodeSize)) == NULL) yyerror("out of memory");
-    printf("%s",i);
+
     char * xx = (char *)malloc(20*sizeof(char));
     strcpy(xx,i);
     p->type = typeId;

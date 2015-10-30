@@ -61,8 +61,10 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
                           case '!': s = "[!]"; break;
                           case '~': s = "[~]"; break;
                           case '=': s = "[=]"; break;
+                          case '<': s = "[<]"; break;
+                          case '>': s = "[>]"; break;
                           case BINARYOP: s = "BINARYOP"; break;
-                          default: s = "???"; break;
+                          default: s = "???"; printf("%d", p->opr.oper); break;
                       }
         default: break;
     }

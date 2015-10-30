@@ -12,7 +12,7 @@ INT         [0-9]+
 SEMI        \;
 COMMA       \,
 DOT         \.
-BINARYOP    \+
+BINARYOP    [\+\<]
 UNARYOP     [\-\+\~\!]
 ASSIGNOP    \=
 TYPE        int
@@ -37,7 +37,7 @@ ID          [a-zA-Z][a-zA-Z]*
 {SEMI}      {return SEMI;}
 {COMMA}     {return COMMA;}
 {DOT}       {return DOT;}
-{BINARYOP}  {return BINARYOP;}
+{BINARYOP}  {yylval.oPerator = yytext; return BINARYOP;}
 {UNARYOP}   {return UNARYOP;}
 {ASSIGNOP}  {return ASSIGNOP;}
 {TYPE}      {return TYPE;}
