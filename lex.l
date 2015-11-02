@@ -8,13 +8,13 @@ extern char *yytext;
 
 %}
 
-INT         [0-9]+
+INT         [0-9]+|0[xX][0-9a-fA-F]|0[0-7]+
 SEMI        \;
 COMMA       \,
 DOT         \.
-BINARYOP    [\+\<]
-UNARYOP     [\-\+\~\!]
-ASSIGNOP    \=
+BINARYOP    [\+\-\*\/\>\<\&\|]|\&\&|\|\||\<\<\=|\>\>\=|\<\<|\>\>|\>\=|\<\=|\=\=|\!\=
+UNARYOP     [\-\+\~\!]|\+\+|\-\-
+ASSIGNOP    [\=]|\+\=|\-\=|\*\=|\/\=|\&\=|\^\=|\|\=
 TYPE        int
 LP          \(
 RP          \)
@@ -33,13 +33,15 @@ ID          [a-zA-Z][a-zA-Z]*
 
 %%
 
-{INT}       {yylval.iValue = atoi(yytext); return INT;}
+{INT}       {if(yytext[0]=='0' && (yytext[1]=='x' || yytext[1]=='X')) yylval.iValue = strtol(yytext,NULL,16); 
+             else if(yytext[0]=='0') yylval.iValue = strtol(yytext,NULL,8);
+             else yylval.iValue = atoi(yytext); return INT;}
 {SEMI}      {return SEMI;}
 {COMMA}     {return COMMA;}
 {DOT}       {return DOT;}
 {BINARYOP}  {yylval.oPerator = yytext; return BINARYOP;}
-{UNARYOP}   {return UNARYOP;}
-{ASSIGNOP}  {return ASSIGNOP;}
+{UNARYOP}   {yylval.oPerator = yytext; return UNARYOP;}
+{ASSIGNOP}  {yylval.oPerator = yytext; return ASSIGNOP;}
 {TYPE}      {return TYPE;}
 {LP}        {return LP;}
 {RP}        {return RP;}
