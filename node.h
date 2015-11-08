@@ -1,11 +1,11 @@
-typedef enum { typeCon, typeId, typeOpr } nodeEnum;
-typedef struct {
+typedef enum { typeCon, typeId, typeOpr } nodeEnum; /* Define the type in need. */
+typedef struct {  /* Used for constant value. */
     int value;
 } conNodeType;
-typedef struct {
+typedef struct {  /* Used for identifier. */
     char * i;
 } idNodeType;
-typedef struct {
+typedef struct {  /* Used for node of several children. */
     int oper;
     int nops;
     struct nodeTypeTag *op[1];

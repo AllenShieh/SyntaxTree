@@ -13,6 +13,7 @@ void graphDrawBox(char *s, int c, int l);
 void graphDrawArrow(int c1, int l1, int c2, int l2);
 void exNode(nodeType *p, int c, int l, int *ce, int *cm);
 
+/* Issue the drawing action. */
 int ex(nodeType *p){
     int rte, rtm;
     graphInit();
@@ -21,6 +22,7 @@ int ex(nodeType *p){
     return 0;
 }
 
+/* Draw the syntax tree using this function recursively. */
 void exNode(nodeType *p, int c, int l, int *ce, int *cm){
     int w, h;
     char *s;
@@ -32,6 +34,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
     if(!p) return;
     strcpy(word,"???");
     s = word;
+    /* Set the corresponding displaying strings. */
     switch(p->type){
         case typeCon: sprintf(word, "c(%d)", p->con.value); break;
         case typeId: sprintf(word, "id(%s)", p->id.i); break;
@@ -99,6 +102,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
                           case '-': s = "[-]"; break;
                           case '*': s = "[*]"; break;
                           case '/': s = "[/]"; break;
+                          case '%': s = "[%]"; break;
                           case '!': s = "[!]"; break;
                           case '~': s = "[~]"; break;
                           case '=': s = "[=]"; break;
@@ -144,6 +148,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
 char graph[lmax][cmax];
 int graphNumber = 0;
 
+/* Check whether the tree is to big. */
 int graphTest(int l, int c){
      int ok;
      ok = 1;
@@ -156,6 +161,7 @@ int graphTest(int l, int c){
      return 0;
 }
 
+/* Initiate the drawing board */
 void graphInit(void){
      int i, j;
      for(i = 0;i<lmax;i++){
@@ -165,6 +171,7 @@ void graphInit(void){
      }
 }
 
+/* Finish the drawing and print. */
 void graphFinish(){
      int i, j;
      for(i=0;i<lmax;i++){
@@ -179,11 +186,13 @@ void graphFinish(){
      printf("\n");
 }
 
+/* Set drawing related elements. */
 void graphBox(char *s, int *w, int *h){
      *w = strlen(s) + del;
      *h = 1;
 }
 
+/* Draw a node. */
 void graphDrawBox(char *s, int c, int l){
     int i;
     graphTest(l, c+strlen(s)-1+del);
@@ -192,6 +201,7 @@ void graphDrawBox(char *s, int c, int l){
     }
 }
 
+/* Draw arrows used for connection. */
 void graphDrawArrow(int c1, int l1, int c2, int l2){
     int m;
     graphTest(l1,c1);

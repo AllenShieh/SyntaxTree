@@ -1,3 +1,9 @@
+/*
+    This source file defines the tokens needed in the grammar.
+    Tokens are represented as regular expressions and correctly
+    returned when encountered.
+*/
+
 %{
 
 #include <stdio.h>
@@ -12,9 +18,9 @@ INT         [0-9]+|0[xX][0-9a-fA-F]|0[0-7]+
 SEMI        \;
 COMMA       \,
 DOT         \.
-BINARYOP    [\+\-\*\/\>\<\&\|]|\&\&|\|\||\<\<\=|\>\>\=|\<\<|\>\>|\>\=|\<\=|\=\=|\!\=
+BINARYOP    [\+\-\*\/\%\>\<\&\|]|\&\&|\|\||\<\<|\>\>|\>\=|\<\=|\=\=|\!\=
 UNARYOP     [\-\+\~\!]|\+\+|\-\-
-ASSIGNOP    [\=]|\+\=|\-\=|\*\=|\/\=|\&\=|\^\=|\|\=
+ASSIGNOP    [\=]|\+\=|\-\=|\*\=|\/\=|\&\=|\^\=|\|\=|\>\>\=|\<\<\=
 TYPE        int
 LP          \(
 RP          \)
@@ -32,9 +38,11 @@ FOR         for
 ID          [a-zA-Z][a-zA-Z]*
 
 %%
-
-{INT}       {if(yytext[0]=='0' && (yytext[1]=='x' || yytext[1]=='X')) yylval.iValue = strtol(yytext,NULL,16); 
+{INT}       {/* When the number is hexadecimal, convert it into decimal form. */
+             if(yytext[0]=='0' && (yytext[1]=='x' || yytext[1]=='X')) yylval.iValue = strtol(yytext,NULL,16);
+             /* When the number is octal, convert it into decimal form. */
              else if(yytext[0]=='0') yylval.iValue = strtol(yytext,NULL,8);
+             /* Return directly if the number is decimal */
              else yylval.iValue = atoi(yytext); return INT;}
 {SEMI}      {return SEMI;}
 {COMMA}     {return COMMA;}

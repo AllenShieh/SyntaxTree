@@ -1,3 +1,9 @@
+/*
+    This source file mainly defines the grammar in use.
+    Useful functions used for constructing the syntax tree
+    and analyzing the operators are also defined.
+*/
+
 %{
 
 #include <stdio.h>
@@ -29,33 +35,36 @@ FILE *yyout;
     nodeType *nPtr;
 };
 %token <iValue> INT
-%token <sIndex> ID 
-%token <oPerator> BINARYOP UNARYOP ASSIGNOP
-%token SEMI COMMA DOT TYPE LP RP LB RB LC RC STRUCT RETURN IF ELSE BREAK CONT FOR
+%token <sIndex> ID
+%token SEMI COMMA TYPE LC RC STRUCT RETURN IF ELSE BREAK CONT FOR
+%right <oPerator> ASSIGNOP
+%left  <oPerator> BINARYOP
+%right <oPerator> UNARYOP
+%left  DOT LP RP LB RB
 %start PROGRAM
 
 %type <nPtr> STMT EXP STMTS ESTMT STMTBLOCK ARGS ARRS EXTDEF EXTDEFS EXTVARS DEFS DEF DECS DEC VAR SPEC STSPEC OPTTAG INIT FUNC PARA PARAS
 %%
-PROGRAM     :   EXTDEFS { ex($1); } 
+PROGRAM     :   EXTDEFS { /* Do the drawing action */ ex($1); }
             ;
 EXTDEFS     :   EXTDEF EXTDEFS { $$ = opr(200, 2, $1, $2); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
 EXTDEF      :   SPEC EXTVARS SEMI { $$ = opr(201, 3, $1, $2, opr(SEMI,0)); }
             |   SPEC FUNC STMTBLOCK  { $$ = opr(201, 3, $1, $2, $3); }
             ;
 EXTVARS     :   DEC { $$ = opr(202, 1, $1); }
             |   DEC COMMA EXTVARS { $$ = opr(202, 3, $1, opr(COMMA,0), $3); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
-SPEC        :   TYPE { /*$$ = opr(TYPE, 0);*/ $$ = opr(203, 1, opr(TYPE,0)); }
+SPEC        :   TYPE { $$ = opr(203, 1, opr(TYPE,0)); }
             |   STSPEC { $$ = opr(203, 1, $1); }
             ;
-STSPEC      :   STRUCT OPTTAG LC DEFS RC { /*$$ = opr(STRUCT, 2, $2, $4);*/ $$ = opr(204, 5, opr(STRUCT,0), $2, opr(LC,0), $4, opr(RC,0)); }
-            |   STRUCT VAR { /*$$ = opr(STRUCT, 1, $2);*/ $$ = (204, 2, opr(STRUCT,0), $2); }
+STSPEC      :   STRUCT OPTTAG LC DEFS RC { $$ = opr(204, 5, opr(STRUCT,0), $2, opr(LC,0), $4, opr(RC,0)); }
+            |   STRUCT VAR { $$ = (204, 2, opr(STRUCT,0), $2); }
             ;
 OPTTAG      :   VAR { $$ = opr(205, 1, $1); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
 VAR         :   ID { $$ = id($1); }
             |   VAR LB INT RB { $$ = opr(206, 4, $1, opr(LB,0), con($3), opr(RB,0)); }
@@ -64,28 +73,28 @@ FUNC        :   VAR LP PARAS RP { $$ = opr(207, 4, $1, opr(LP,0), $3, opr(RP,0))
             ;
 PARAS       :   PARA COMMA PARAS { $$ = opr(208, 3, $1, opr(COMMA,0), $3); }
             |   PARA { $$ = opr(208, 1, $1); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
 PARA        :   SPEC VAR { $$ = opr(209, 2, $1, $2); }
             ;
-STMTBLOCK   :   LC DEFS STMTS RC { $$ = opr(210, 4, opr(LC,0), $2, $3, opr(RC,0)); /*last return $2 can't be a NULL*/ }
+STMTBLOCK   :   LC DEFS STMTS RC { $$ = opr(210, 4, opr(LC,0), $2, $3, opr(RC,0)); }
             ;
 STMTS       :   STMT STMTS { $$ = opr(211, 2, $1, $2); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
 STMT        :   EXP SEMI { $$ = opr(212, 2, $1, opr(SEMI,0)); }
             |   STMTBLOCK { $$ = opr(212, 1, $1); }
-            |   RETURN EXP SEMI { /*$$ = opr(RETURN, 1, $2);*/ $$ = opr(212, 3, opr(RETURN,0), $2, opr(SEMI,0)); }
-            |   IF LP EXP RP STMT ESTMT { /*$$ = opr(IF, 3, $3, $5, $6);*/ $$ = opr(212, 6, opr(IF,0), opr(LP,0), $3, opr(RP,0), $5, $6); }
+            |   RETURN EXP SEMI { $$ = opr(212, 3, opr(RETURN,0), $2, opr(SEMI,0)); }
+            |   IF LP EXP RP STMT ESTMT { $$ = opr(212, 6, opr(IF,0), opr(LP,0), $3, opr(RP,0), $5, $6); }
             |   FOR LP EXP SEMI EXP SEMI EXP RP STMT { $$ = opr(212, 9, opr(FOR,0), opr(LP,0), $3, opr(SEMI,0), $5, opr(SEMI,0), $7, opr(RP,0), $9); }
-            |   CONT SEMI { /*$$ = opr(CONT, 0);*/ $$ = opr(212, 2, opr(CONT,0), opr(SEMI,0)); }
-            |   BREAK SEMI { /*$$ = opr(BREAK, 0);*/ $$ = opr(212, 2, opr(BREAK,0), opr(SEMI,0)); }
+            |   CONT SEMI { $$ = opr(212, 2, opr(CONT,0), opr(SEMI,0)); }
+            |   BREAK SEMI { $$ = opr(212, 2, opr(BREAK,0), opr(SEMI,0)); }
             ;
-ESTMT       :   ELSE STMT { /*$$ = opr(ELSE, 1, $2);*/ $$ = opr(213, 2, opr(ELSE,0), $2); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+ESTMT       :   ELSE STMT { $$ = opr(213, 2, opr(ELSE,0), $2); }
+            |   /* */ { $$ = NULL; }
             ;
 DEFS        :   DEF DEFS { $$ = opr(214, 2, $1, $2); }
-            |   /* */ { /*$$ = opr('e', 0); */ $$ = NULL; }
+            |   /* */ { $$ = NULL; }
             ;
 DEF         :   SPEC DECS SEMI { $$ = opr(215, 3, $1, $2, opr(SEMI,0)); }
             ;
@@ -93,30 +102,31 @@ DECS        :   DEC COMMA DECS { $$ = opr(216, 3, $1, opr(COMMA,0), $3); }
             |   DEC { $$ = opr(216, 1, $1); }
             ;
 DEC         :   VAR { $$ = opr(217, 1, $1); }
-            |   VAR ASSIGNOP INIT { /*$$ = opr('=', 2, $1, $3);*/ temp = which_operator($2); $$ = opr(217, 3, $1, opr(temp,0), $3); }
+            |   VAR ASSIGNOP INIT { temp = which_operator($2); $$ = opr(217, 3, $1, opr(temp,0), $3); }
             ;
 INIT        :   EXP { $$ = opr(218, 1, $1); }
             |   LC ARGS RC { $$ = opr(218, 3, opr(LC,0), $2, opr(RC,0)); }
             ;
 ARRS        :   LB EXP RB ARRS { $$ = opr(219, 4, opr(LB,0), $2, opr(RB,0), $4); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
 ARGS        :   EXP COMMA ARGS { $$ = opr(220, 3, $1, opr(COMMA,0), $3); }
             |   EXP { $$ = opr(220, 1, $1); }
             ;
-EXP         :   EXP BINARYOP EXP { temp = which_operator($2); /*$$ = opr(temp, 2, $1, $3);*/ $$ = opr(221, 3, $1, opr(temp,0), $3); }
-            |   UNARYOP EXP { temp = which_operator($1); /*$$ = opr(UNARYOP, 1, $2);*/ $$ = opr(221, 2, opr(temp,0), $2); }
+EXP         :   EXP BINARYOP EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   UNARYOP EXP { temp = which_operator($1); $$ = opr(221, 2, opr(temp,0), $2); }
             |   LP EXP RP { $$ = opr(221, 3, opr(LP,0), $2, opr(RP,0)); }
             |   VAR LP ARGS RP { $$ = opr(221, 4, $1, opr(LP,0), $3, opr(RP,0)); }
             |   VAR ARRS { $$ = opr(221, 2, $1, $2); }
             |   EXP DOT VAR { $$ = opr(221, 3, $1, opr(DOT,0), $3); }
             |   INT { $$ = con($1); }
             |   VAR ASSIGNOP INIT { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
-            |   /* */ { $$ = NULL; /*$$ = opr('e', 0);*/ }
+            |   /* */ { $$ = NULL; }
             ;
 
 %%
 
+/* Used to return the value representing the specific operator. */
 int which_operator(char * in){
     if(in[0]=='&' && in[1]=='&') return 300;
     if(in[0]=='|' && in[1]=='|') return 301;
@@ -152,6 +162,7 @@ int which_operator(char * in){
 
 #define SIZEOF_NODETYPE ((char *) &p->con - (char *)p)
 
+/* Return a node of a constant value */
 nodeType *con(int value){
     nodeType *p;
     size_t nodeSize;
@@ -165,6 +176,7 @@ nodeType *con(int value){
     return p;
 }
 
+/* Return a node of an identifier. */
 nodeType *id(char* i){
     nodeType * p;
     size_t nodeSize;
@@ -180,6 +192,7 @@ nodeType *id(char* i){
     return p;
 }
 
+/* Return a node which have children listed in the parameter. */
 nodeType *opr(int oper, int nops, ...){
     va_list ap;
     nodeType *p;
