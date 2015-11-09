@@ -34,24 +34,42 @@ FILE *yyout;
     char* oPerator;
     nodeType *nPtr;
 };
+
+/* The precedence is decided from down to up. */
 %token <iValue> INT
 %token <sIndex> ID
 %token SEMI COMMA TYPE LC RC STRUCT RETURN IF ELSE BREAK CONT FOR
 %right <oPerator> ASSIGNOP
-%left  <oPerator> BINARYOP
+%left  <oPerator> BINARYOP12
+%left  <oPerator> BINARYOP11
+%left  <oPerator> BINARYOP10
+%left  <oPerator> BINARYOP9
+%left  <oPerator> BINARYOP8
+%left  <oPerator> BINARYOP7
+%left  <oPerator> BINARYOP6
+%left  <oPerator> BINARYOP5
+%left  <oPerator> BINARYOP4
+%left  <oPerator> BINARYOP3
 %right <oPerator> UNARYOP
 %left  DOT LP RP LB RB
 %start PROGRAM
 
-%type <nPtr> STMT EXP STMTS ESTMT STMTBLOCK ARGS ARRS EXTDEF EXTDEFS EXTVARS DEFS DEF DECS DEC VAR SPEC STSPEC OPTTAG INIT FUNC PARA PARAS
+%type <nPtr> STMT EXP EXPNULL STMTS ESTMT STMTBLOCK ARGS ARRS EXTDEF EXTDEFS EXTVARS DEFS DEF DECS DEC VAR SPEC STSPEC OPTTAG INIT FUNC PARA PARAS PROGRAM
+
+/*
+    Note that terminal 'ID' should be replaced by 'VAR' in some particular places.
+    Otherwise, the contents of the identifier are not right because the variable
+    referred is a point of char.
+*/
 %%
-PROGRAM     :   EXTDEFS { /* Do the drawing action */ ex($1); }
+PROGRAM     :   EXTDEFS { /* Do the drawing action */ $$ = opr(199, 1, $1); ex($$); }
             ;
 EXTDEFS     :   EXTDEF EXTDEFS { $$ = opr(200, 2, $1, $2); }
             |   /* */ { $$ = NULL; }
             ;
 EXTDEF      :   SPEC EXTVARS SEMI { $$ = opr(201, 3, $1, $2, opr(SEMI,0)); }
             |   SPEC FUNC STMTBLOCK  { $$ = opr(201, 3, $1, $2, $3); }
+            |   STRUCT OPTTAG EXTVARS SEMI { $$ = opr(201, 4, opr(STRUCT,0), $2, $3, opr(SEMI,0)); } /* There is something wrong with the struct grammar, thus the modification. */
             ;
 EXTVARS     :   DEC { $$ = opr(202, 1, $1); }
             |   DEC COMMA EXTVARS { $$ = opr(202, 3, $1, opr(COMMA,0), $3); }
@@ -61,7 +79,7 @@ SPEC        :   TYPE { $$ = opr(203, 1, opr(TYPE,0)); }
             |   STSPEC { $$ = opr(203, 1, $1); }
             ;
 STSPEC      :   STRUCT OPTTAG LC DEFS RC { $$ = opr(204, 5, opr(STRUCT,0), $2, opr(LC,0), $4, opr(RC,0)); }
-            |   STRUCT VAR { $$ = (204, 2, opr(STRUCT,0), $2); }
+            /*|   STRUCT VAR { $$ = (204, 2, opr(STRUCT,0), $2); } */
             ;
 OPTTAG      :   VAR { $$ = opr(205, 1, $1); }
             |   /* */ { $$ = NULL; }
@@ -86,7 +104,7 @@ STMT        :   EXP SEMI { $$ = opr(212, 2, $1, opr(SEMI,0)); }
             |   STMTBLOCK { $$ = opr(212, 1, $1); }
             |   RETURN EXP SEMI { $$ = opr(212, 3, opr(RETURN,0), $2, opr(SEMI,0)); }
             |   IF LP EXP RP STMT ESTMT { $$ = opr(212, 6, opr(IF,0), opr(LP,0), $3, opr(RP,0), $5, $6); }
-            |   FOR LP EXP SEMI EXP SEMI EXP RP STMT { $$ = opr(212, 9, opr(FOR,0), opr(LP,0), $3, opr(SEMI,0), $5, opr(SEMI,0), $7, opr(RP,0), $9); }
+            |   FOR LP EXPNULL SEMI EXPNULL SEMI EXPNULL RP STMT { $$ = opr(212, 9, opr(FOR,0), opr(LP,0), $3, opr(SEMI,0), $5, opr(SEMI,0), $7, opr(RP,0), $9); }
             |   CONT SEMI { $$ = opr(212, 2, opr(CONT,0), opr(SEMI,0)); }
             |   BREAK SEMI { $$ = opr(212, 2, opr(BREAK,0), opr(SEMI,0)); }
             ;
@@ -113,14 +131,26 @@ ARRS        :   LB EXP RB ARRS { $$ = opr(219, 4, opr(LB,0), $2, opr(RB,0), $4);
 ARGS        :   EXP COMMA ARGS { $$ = opr(220, 3, $1, opr(COMMA,0), $3); }
             |   EXP { $$ = opr(220, 1, $1); }
             ;
-EXP         :   EXP BINARYOP EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+EXP         :   EXP BINARYOP3 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP4 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP5 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP6 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP7 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP8 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP9 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP10 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP11 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   EXP BINARYOP12 EXP { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
             |   UNARYOP EXP { temp = which_operator($1); $$ = opr(221, 2, opr(temp,0), $2); }
             |   LP EXP RP { $$ = opr(221, 3, opr(LP,0), $2, opr(RP,0)); }
             |   VAR LP ARGS RP { $$ = opr(221, 4, $1, opr(LP,0), $3, opr(RP,0)); }
             |   VAR ARRS { $$ = opr(221, 2, $1, $2); }
             |   EXP DOT VAR { $$ = opr(221, 3, $1, opr(DOT,0), $3); }
             |   INT { $$ = con($1); }
-            |   VAR ASSIGNOP INIT { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); }
+            |   BINARYOP4 INT { temp = which_operator($1); $$ = opr(221, 2, opr(temp,0), con($2)); }
+            |   EXP ASSIGNOP INIT { temp = which_operator($2); $$ = opr(221, 3, $1, opr(temp,0), $3); } /* Assign operation should be added. */
+            ;
+EXPNULL     :   EXP { $$ = opr(222, 1, $1); }
             |   /* */ { $$ = NULL; }
             ;
 
@@ -184,7 +214,7 @@ nodeType *id(char* i){
     nodeSize = SIZEOF_NODETYPE + sizeof(idNodeType);
     if((p=malloc(nodeSize)) == NULL) yyerror("out of memory");
 
-    char * xx = (char *)malloc(20*sizeof(char));
+    char * xx = (char *)malloc(64*sizeof(char));
     strcpy(xx,i);
     p->type = typeId;
     p->id.i = xx;

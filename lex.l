@@ -14,11 +14,20 @@ extern char *yytext;
 
 %}
 
-INT         [0-9]+|0[xX][0-9a-fA-F]|0[0-7]+
+INT         0|[1-9][0-9]*|0[xX][0-9a-fA-F]+|0[0-7]+
 SEMI        \;
 COMMA       \,
 DOT         \.
-BINARYOP    [\+\-\*\/\%\>\<\&\|]|\&\&|\|\||\<\<|\>\>|\>\=|\<\=|\=\=|\!\=
+BINARYOP3   [\*\/\%]
+BINARYOP4   [\+\-]
+BINARYOP5   \<\<|\>\>
+BINARYOP6   [\>\<]|\>\=|\<\=
+BINARYOP7   \=\=|\!\=
+BINARYOP8   \&
+BINARYOP9   \^
+BINARYOP10  \|
+BINARYOP11  \&\&
+BINARYOP12  \|\|
 UNARYOP     [\-\+\~\!]|\+\+|\-\-
 ASSIGNOP    [\=]|\+\=|\-\=|\*\=|\/\=|\&\=|\^\=|\|\=|\>\>\=|\<\<\=
 TYPE        int
@@ -47,7 +56,16 @@ ID          [a-zA-Z][a-zA-Z]*
 {SEMI}      {return SEMI;}
 {COMMA}     {return COMMA;}
 {DOT}       {return DOT;}
-{BINARYOP}  {yylval.oPerator = yytext; return BINARYOP;}
+{BINARYOP3}     {yylval.oPerator = yytext; return BINARYOP3;}
+{BINARYOP4}     {yylval.oPerator = yytext; return BINARYOP4;}
+{BINARYOP5}     {yylval.oPerator = yytext; return BINARYOP5;}
+{BINARYOP6}     {yylval.oPerator = yytext; return BINARYOP6;}
+{BINARYOP7}     {yylval.oPerator = yytext; return BINARYOP7;}
+{BINARYOP8}     {yylval.oPerator = yytext; return BINARYOP8;}
+{BINARYOP9}     {yylval.oPerator = yytext; return BINARYOP9;}
+{BINARYOP10}    {yylval.oPerator = yytext; return BINARYOP10;}
+{BINARYOP11}    {yylval.oPerator = yytext; return BINARYOP11;}
+{BINARYOP12}    {yylval.oPerator = yytext; return BINARYOP12;}
 {UNARYOP}   {yylval.oPerator = yytext; return UNARYOP;}
 {ASSIGNOP}  {yylval.oPerator = yytext; return ASSIGNOP;}
 {TYPE}      {return TYPE;}

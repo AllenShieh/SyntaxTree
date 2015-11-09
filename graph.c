@@ -1,3 +1,9 @@
+/*
+    The way of drawing is first brought up by Tom Niemann on
+    the basis of which I did the modification in order to meet
+    the requirements of the project.
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include "node.h"
@@ -30,7 +36,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
     int k;
     int che, chm;
     int cs;
-    char word[20];
+    char word[64];
     if(!p) return;
     strcpy(word,"???");
     s = word;
@@ -56,6 +62,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
                           case RB: s = "rb"; break;
                           case LC: s = "lc"; break;
                           case RC: s = "rc"; break;
+                          case 199: s = "program"; break;
                           case 200: s = "extdefs"; break;
                           case 201: s = "extdef"; break;
                           case 202: s = "extvars"; break;
@@ -78,6 +85,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
                           case 219: s = "arrs"; break;
                           case 220: s = "args"; break;
                           case 221: s = "exp"; break;
+                          case 222: s = "exp/null"; break;
                           case 'e': s = "VOID"; break;
                           case 300: s = "[&&]"; break;
                           case 301: s=  "[||]"; break;
@@ -102,6 +110,7 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
                           case '-': s = "[-]"; break;
                           case '*': s = "[*]"; break;
                           case '/': s = "[/]"; break;
+                          case '^': s = "[^]"; break;
                           case '%': s = "[%]"; break;
                           case '!': s = "[!]"; break;
                           case '~': s = "[~]"; break;
@@ -143,8 +152,8 @@ void exNode(nodeType *p, int c, int l, int *ce, int *cm){
     }
 }
 
-#define lmax 1000
-#define cmax 1000
+#define lmax 2000
+#define cmax 2000
 char graph[lmax][cmax];
 int graphNumber = 0;
 
@@ -181,7 +190,7 @@ void graphFinish(){
          if(graph[i][j]==' ') graph[i][j] = 0;
      }
      for(i = lmax-1;i>0 && graph[i][0]==0;i--);
-     printf("\n\nGraph %d:\n",graphNumber++);
+     printf("\nGraph %d:\n",graphNumber++);
      for(j = 0;j<=i;j++) printf("\n%s", graph[j]);
      printf("\n");
 }
